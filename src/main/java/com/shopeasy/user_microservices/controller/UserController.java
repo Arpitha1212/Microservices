@@ -2,18 +2,25 @@ package com.shopeasy.user_microservices.controller;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 
 import com.shopeasy.user_microservices.dto.ApiResponse;
+import com.shopeasy.user_microservices.dto.CreateUserRequest;
+import com.shopeasy.user_microservices.dto.UpdateUserRequest;
 import com.shopeasy.user_microservices.dto.UserDTO;
 import com.shopeasy.user_microservices.service.UserService;
 
-import org.springframework.web.bind.annotation.RequestMapping;
-
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 
 import java.util.List;
 
+import org.springframework.web.bind.annotation.PatchMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
@@ -33,19 +40,24 @@ public class UserController {
     }
 
     @PostMapping(value ="/addUser")
-    public ResponseEntity<ApiResponse<UserDTO>> createUser(@RequestBody UserDTO userDTO){
+    public ResponseEntity<ApiResponse<UserDTO>> createUser(@Valid @RequestBody CreateUserRequest userDTO){
       UserDTO user = userService.createUser(userDTO);
-      if(user!= null){
-         ApiResponse<UserDTO> response = new ApiResponse<UserDTO>("Users fetched successfully",HttpStatus.OK.value(), user);
+        ApiResponse<UserDTO> response = new ApiResponse<UserDTO>("Users created successfully",HttpStatus.OK.value(), user);
         return ResponseEntity.ok(response);
-      }
-      ApiResponse<UserDTO> response =
-            new ApiResponse<>(
-                    "User creation failed",
-                    HttpStatus.INTERNAL_SERVER_ERROR.value(),
-                    null);
+    }    
 
-    return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-            .body(response);
+    @PatchMapping(value ="/{id}/updateUser")
+    public ResponseEntity<ApiResponse<UserDTO>> updateUser(@PathVariable Long id, @Valid @RequestBody UpdateUserRequest userDTO){
+         UserDTO user = userService.updateUser(id,userDTO); 
+         ApiResponse<UserDTO> response = new ApiResponse<UserDTO>("Users updated successfully",HttpStatus.OK.value(), user);
+        return ResponseEntity.ok(response);
     }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<ApiResponse<Void>> deleteUser(@PathVariable Long id){
+        userService.deleteUser(id);
+        ApiResponse<Void> response = new ApiResponse<>("User deleted successfully", HttpStatus.OK.value(), null);
+        return ResponseEntity.ok(response);
+    }
+
 }
